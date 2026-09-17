@@ -1,0 +1,2775 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#ffffff">
+    <title>Shazan</title>
+
+    <!-- Favicon: raio branco sobre quadrado azul (SVG inline, sem arquivo externo) -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23155EEF'/%3E%3Cpath transform='translate(4 4)' d='M13 2 3 14h9l-1 8 10-12h-9l1-8z' fill='%23fff' stroke='%23fff' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
+    <style>
+        .opaco {
+            opacity: .9;
+            filter: blur(.4px) contrast(.95)
+        }
+    </style>
+
+    <style>
+        /* ==========================================================================
+       SHAZAN — estilos
+       --------------------------------------------------------------------------
+       Índice
+         1. Camadas
+         2. Tokens de design
+         3. Reset
+         4. Base
+         5. Layout (app shell)
+         6. Componentes
+            6.1 Ícones e bandeiras
+            6.2 Botão de ícone
+            6.3 Marca
+            6.4 Sidebar
+            6.5 Busca
+            6.6 Navegação
+            6.7 Backdrop (drawer mobile)
+            6.8 Topbar
+            6.9 Placeholder de conteúdo
+            6.10 Visão de documento (cabeçalho, aviso, painéis, legenda)
+            6.11 Cartão esquemático (.idcard)
+         7. Utilitários
+         8. Preferências do usuário
+
+       Convenções
+         - Nomes em BEM (.bloco__elemento--modificador); estado via atributos
+           ARIA ([aria-current], [aria-expanded]) ou classes .is-* no <body>.
+         - Toda cor, raio, sombra e duração sai dos tokens (seção 2).
+         - A ordem das camadas abaixo decide a precedência — não a especificidade.
+           Cada componente carrega o próprio responsivo, logo abaixo dele.
+         - Breakpoint único do shell: 1024px (abaixo disso a sidebar vira drawer).
+       ========================================================================== */
+
+        /* 1. Camadas ============================================================== */
+        @layer reset, tokens, base, layout, components, utilities, preferences;
+
+        /* 2. Tokens de design ===================================================== */
+        @layer tokens {
+            :root {
+                /* Cinzas (frios, puxados para o azul) */
+                --gray-25: #fcfcfd;
+                --gray-50: #f9fafb;
+                --gray-100: #f2f4f7;
+                --gray-200: #eaecf0;
+                --gray-300: #d0d5dd;
+                --gray-400: #98a2b3;
+                --gray-500: #667085;
+                --gray-600: #475467;
+                --gray-700: #344054;
+                --gray-800: #1d2939;
+                --gray-900: #101828;
+
+                /* Azuis */
+                --blue-25: #f5f8ff;
+                --blue-50: #eff4ff;
+                --blue-100: #d1e0ff;
+                --blue-200: #b2ccff;
+                --blue-300: #84adff;
+                --blue-400: #528bff;
+                --blue-500: #2970ff;
+                --blue-600: #155eef;
+                --blue-700: #004eeb;
+                --blue-800: #0040c1;
+
+                /* Semânticos */
+                --bg: var(--gray-50);
+                --surface: #fff;
+                --border: var(--gray-200);
+                --border-strong: var(--gray-300);
+                --text: var(--gray-900);
+                --text-soft: var(--gray-700);
+                --text-muted: var(--gray-500);
+                --accent: var(--blue-600);
+                --accent-soft: var(--blue-50);
+                --ring: rgb(41 112 255 / .22);
+                --scrim: rgb(16 24 40 / .48);
+
+                /* Tipografia */
+                --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                    Roboto, "Helvetica Neue", Arial, sans-serif;
+                --text-2xs: .6875rem;
+                /* 11px */
+                --text-xs: .75rem;
+                /* 12px */
+                --text-sm: .8125rem;
+                /* 13px */
+                --text-md: .875rem;
+                /* 14px */
+                --text-lg: .9375rem;
+                /* 15px */
+                --text-xl: 1.0625rem;
+                /* 17px */
+
+                /* Raios */
+                --radius-xs: 3px;
+                --radius-sm: 6px;
+                --radius-md: 8px;
+                --radius-lg: 12px;
+                --radius-full: 999px;
+
+                /* Sombras */
+                --shadow-xs: 0 1px 2px rgb(16 24 40 / .05);
+                --shadow-sm: 0 1px 3px rgb(16 24 40 / .10), 0 1px 2px rgb(16 24 40 / .06);
+                --shadow-drawer: 0 24px 48px -12px rgb(16 24 40 / .22), 0 0 0 1px rgb(16 24 40 / .04);
+
+                /* Movimento */
+                --ease-out: cubic-bezier(.22, 1, .36, 1);
+                --dur-fast: .12s;
+                --dur: .18s;
+                --dur-slow: .32s;
+
+                /* Layout */
+                --sidebar-w: 17.5rem;
+                --drawer-w: min(20rem, calc(100vw - 3.5rem));
+                --topbar-h: 3.75rem;
+                --gutter: 1.5rem;
+
+                /* Empilhamento */
+                --z-topbar: 10;
+                --z-backdrop: 30;
+                --z-sidebar: 40;
+            }
+
+            @media (max-width: 1023.98px) {
+                :root {
+                    --topbar-h: 3.5rem;
+                    --gutter: 1rem;
+                }
+            }
+        }
+
+        /* 3. Reset ================================================================ */
+        @layer reset {
+
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+
+            * {
+                margin: 0;
+            }
+
+            html {
+                -webkit-text-size-adjust: 100%;
+                text-size-adjust: 100%;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            svg,
+            img {
+                display: block;
+                max-width: 100%;
+            }
+
+            button,
+            input,
+            select,
+            textarea {
+                font: inherit;
+                color: inherit;
+                letter-spacing: inherit;
+            }
+
+            button {
+                padding: 0;
+                background: none;
+                border: 0;
+                cursor: pointer;
+            }
+
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            ul[role="list"] {
+                padding: 0;
+                list-style: none;
+            }
+
+            h1,
+            h2,
+            h3,
+            h4 {
+                font-size: inherit;
+                font-weight: inherit;
+            }
+
+            [hidden] {
+                display: none !important;
+            }
+        }
+
+        /* 4. Base ================================================================= */
+        @layer base {
+            html {
+                font-family: var(--font-sans);
+                line-height: 1.5;
+                color: var(--text);
+                background: var(--bg);
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                text-rendering: optimizeLegibility;
+            }
+
+            body {
+                min-height: 100vh;
+                min-height: 100dvh;
+                font-size: var(--text-md);
+            }
+
+            :focus-visible {
+                outline: 2px solid var(--blue-500);
+                outline-offset: 2px;
+            }
+
+            ::selection {
+                color: var(--blue-800);
+                background: var(--blue-100);
+            }
+
+            mark {
+                padding: 0 1px;
+                margin: 0 -1px;
+                color: var(--blue-800);
+                background: var(--blue-100);
+                border-radius: var(--radius-xs);
+            }
+        }
+
+        /* 5. Layout (app shell) =================================================== */
+        @layer layout {
+            .app {
+                display: grid;
+                grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+                min-height: 100vh;
+                min-height: 100dvh;
+            }
+
+            .main {
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+            }
+
+            .content {
+                flex: 1;
+                width: 100%;
+                padding: var(--gutter);
+                padding-bottom: max(var(--gutter), env(safe-area-inset-bottom));
+                outline: none;
+            }
+
+            @media (max-width: 1023.98px) {
+                .app {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+
+                /* Trava a rolagem da página enquanto o drawer está aberto */
+                body.is-nav-open {
+                    overflow: hidden;
+                }
+            }
+        }
+
+        /* 6. Componentes ========================================================== */
+        @layer components {
+
+            /* 6.1 Ícones e bandeiras ---------------------------------------------- */
+            .sprite {
+                /* display:none quebraria referências internas do sprite em alguns browsers */
+                position: absolute;
+                width: 0;
+                height: 0;
+                overflow: hidden;
+            }
+
+            .icon {
+                flex: none;
+                width: 1.25rem;
+                height: 1.25rem;
+                fill: none;
+                stroke: currentColor;
+                stroke-width: 2;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+            }
+
+            .icon--solid {
+                fill: currentColor;
+                stroke-width: 1.5;
+                /* o traço só arredonda as pontas do preenchimento */
+            }
+
+            .flag {
+                --flag-w: 20px;
+                position: relative;
+                flex: none;
+                display: block;
+                width: var(--flag-w);
+                aspect-ratio: 10 / 7;
+                overflow: hidden;
+                border-radius: var(--radius-xs);
+            }
+
+            .flag::after {
+                /* contorno interno: separa a bandeira de fundos claros */
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                box-shadow: inset 0 0 0 1px rgb(16 24 40 / .12);
+            }
+
+            .flag__img {
+                width: 100%;
+                height: 100%;
+            }
+
+            .flag--lg {
+                --flag-w: 44px;
+                border-radius: 5px;
+                box-shadow: var(--shadow-sm);
+            }
+
+            /* 6.2 Botão de ícone --------------------------------------------------- */
+            .icon-btn {
+                flex: none;
+                display: inline-grid;
+                place-items: center;
+                width: 2.25rem;
+                height: 2.25rem;
+                color: var(--gray-600);
+                border-radius: var(--radius-md);
+                transition: color var(--dur), background-color var(--dur);
+            }
+
+            .icon-btn:hover {
+                color: var(--gray-800);
+                background: var(--gray-100);
+            }
+
+            .icon-btn:active {
+                background: var(--gray-200);
+            }
+
+            /* 6.3 Marca ------------------------------------------------------------- */
+            .brand {
+                display: inline-flex;
+                align-items: center;
+                gap: .625rem;
+                min-width: 0;
+                user-select: none;
+            }
+
+            .brand__mark {
+                flex: none;
+                display: grid;
+                place-items: center;
+                width: 2rem;
+                height: 2rem;
+                color: #fff;
+                background: linear-gradient(180deg, var(--blue-500), var(--blue-700));
+                border-radius: 9px;
+                box-shadow:
+                    inset 0 1px 0 rgb(255 255 255 / .24),
+                    inset 0 0 0 1px rgb(16 24 40 / .08),
+                    0 1px 2px rgb(16 24 40 / .20);
+            }
+
+            .brand__mark .icon {
+                width: 1.0625rem;
+                height: 1.0625rem;
+            }
+
+            .brand__name {
+                font-size: var(--text-xl);
+                font-weight: 700;
+                letter-spacing: -.015em;
+                line-height: 1;
+                color: var(--gray-900);
+            }
+
+            /* 6.4 Sidebar ----------------------------------------------------------- */
+            .sidebar {
+                position: sticky;
+                top: 0;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                height: 100dvh;
+                background: var(--surface);
+                border-right: 1px solid var(--border);
+            }
+
+            .sidebar__header {
+                flex: none;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: .5rem;
+                height: var(--topbar-h);
+                /* alinha com a topbar */
+                padding: 0 .75rem 0 1.25rem;
+            }
+
+            .sidebar__close {
+                display: none;
+            }
+
+            .sidebar__search {
+                flex: none;
+                padding: .25rem .75rem .75rem;
+            }
+
+            .sidebar__scroll {
+                flex: 1;
+                min-height: 0;
+                padding: .25rem .75rem 1rem;
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                scrollbar-width: thin;
+                scrollbar-color: var(--gray-300) transparent;
+
+                /* Sombras de rolagem só com CSS: as duas primeiras camadas ("local")
+           rolam junto com o conteúdo e cobrem as sombras ("scroll") quando a
+           lista está no topo/fim. */
+                background:
+                    linear-gradient(var(--surface) 33%, rgb(255 255 255 / 0)) center top / 100% 28px no-repeat local,
+                    linear-gradient(rgb(255 255 255 / 0), var(--surface) 67%) center bottom / 100% 28px no-repeat local,
+                    radial-gradient(farthest-side at 50% 0, rgb(16 24 40 / .12), rgb(16 24 40 / 0)) center top / 100% 10px no-repeat scroll,
+                    radial-gradient(farthest-side at 50% 100%, rgb(16 24 40 / .12), rgb(16 24 40 / 0)) center bottom / 100% 10px no-repeat scroll;
+            }
+
+            .sidebar__scroll::-webkit-scrollbar {
+                width: 10px;
+            }
+
+            .sidebar__scroll::-webkit-scrollbar-thumb {
+                background: var(--gray-300);
+                background-clip: padding-box;
+                border: 3px solid transparent;
+                border-radius: var(--radius-full);
+            }
+
+            .sidebar__scroll::-webkit-scrollbar-thumb:hover {
+                background-color: var(--gray-400);
+            }
+
+            @media (max-width: 1023.98px) {
+                .sidebar {
+                    position: fixed;
+                    inset: 0 auto 0 0;
+                    z-index: var(--z-sidebar);
+                    width: var(--drawer-w);
+                    padding-left: env(safe-area-inset-left);
+                    border-right: 0;
+                    visibility: hidden;
+                    transform: translateX(-100%);
+                    transition:
+                        transform var(--dur-slow) var(--ease-out),
+                        box-shadow var(--dur-slow) var(--ease-out),
+                        visibility 0s linear var(--dur-slow);
+                }
+
+                .is-nav-open .sidebar {
+                    visibility: visible;
+                    transform: none;
+                    box-shadow: var(--shadow-drawer);
+                    transition:
+                        transform var(--dur-slow) var(--ease-out),
+                        box-shadow var(--dur-slow) var(--ease-out),
+                        visibility 0s;
+                }
+
+                .sidebar__close {
+                    display: inline-grid;
+                }
+
+                .sidebar__scroll {
+                    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+                }
+            }
+
+            /* 6.5 Busca ------------------------------------------------------------- */
+            .search {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .search__icon {
+                position: absolute;
+                left: .6875rem;
+                width: 1rem;
+                height: 1rem;
+                color: var(--gray-400);
+                pointer-events: none;
+                transition: color var(--dur);
+            }
+
+            .search:focus-within .search__icon {
+                color: var(--accent);
+            }
+
+            .search__input {
+                width: 100%;
+                height: 2.375rem;
+                padding: 0 2.25rem 0 2.125rem;
+                font-size: var(--text-sm);
+                color: var(--text);
+                background: var(--gray-50);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-md);
+                outline: none;
+                -webkit-appearance: none;
+                appearance: none;
+                transition:
+                    background-color var(--dur),
+                    border-color var(--dur),
+                    box-shadow var(--dur);
+            }
+
+            .search__input::placeholder {
+                color: var(--text-muted);
+                opacity: 1;
+            }
+
+            .search__input::-webkit-search-decoration,
+            .search__input::-webkit-search-cancel-button {
+                -webkit-appearance: none;
+                appearance: none;
+            }
+
+            .search__input:hover {
+                border-color: var(--border-strong);
+            }
+
+            .search__input:focus {
+                background: var(--surface);
+                border-color: var(--blue-500);
+                box-shadow: 0 0 0 3px var(--ring);
+            }
+
+            .search__kbd {
+                position: absolute;
+                right: .5rem;
+                display: grid;
+                place-items: center;
+                min-width: 1.25rem;
+                height: 1.25rem;
+                padding: 0 .3125rem;
+                font: 500 var(--text-2xs) / 1 var(--font-sans);
+                color: var(--text-muted);
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 5px;
+                box-shadow: 0 1px 0 var(--border);
+                pointer-events: none;
+                transition: opacity var(--dur);
+            }
+
+            /* O atalho some com foco ou texto; o "limpar" só existe com texto — sem JS */
+            .search__input:focus~.search__kbd,
+            .search__input:not(:placeholder-shown)~.search__kbd {
+                opacity: 0;
+            }
+
+            .search__clear {
+                position: absolute;
+                right: .375rem;
+                display: grid;
+                place-items: center;
+                width: 1.625rem;
+                height: 1.625rem;
+                color: var(--gray-500);
+                border-radius: var(--radius-sm);
+                transition: color var(--dur), background-color var(--dur);
+            }
+
+            .search__clear .icon {
+                width: .875rem;
+                height: .875rem;
+                stroke-width: 2.25;
+            }
+
+            .search__clear:hover {
+                color: var(--gray-800);
+                background: var(--gray-200);
+            }
+
+            .search__input:placeholder-shown~.search__clear {
+                display: none;
+            }
+
+            @media (hover: none) {
+                .search__kbd {
+                    display: none;
+                }
+            }
+
+            @media (max-width: 1023.98px) {
+
+                /* >= 16px impede o zoom automático do iOS ao focar o campo */
+                .search__input {
+                    height: 2.75rem;
+                    font-size: 1rem;
+                }
+            }
+
+            /* 6.6 Navegação --------------------------------------------------------- */
+            .nav__heading {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: .5rem;
+                padding: .25rem .625rem .5rem;
+            }
+
+            .nav__title {
+                font-size: var(--text-2xs);
+                font-weight: 600;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+                color: var(--text-muted);
+            }
+
+            .nav__count {
+                padding: .0625rem .4375rem;
+                font-size: var(--text-2xs);
+                font-weight: 500;
+                font-variant-numeric: tabular-nums;
+                color: var(--gray-600);
+                background: var(--gray-100);
+                border-radius: var(--radius-full);
+            }
+
+            .nav__list {
+                display: grid;
+                gap: 2px;
+            }
+
+            .nav-item {
+                position: relative;
+                display: flex;
+                align-items: center;
+                gap: .75rem;
+                min-height: 2.5rem;
+                padding: .5rem .625rem;
+                border-radius: var(--radius-md);
+                transition: background-color var(--dur), color var(--dur);
+            }
+
+            .nav-item::before {
+                /* indicador do item ativo, colado na borda da sidebar */
+                content: "";
+                position: absolute;
+                top: 50%;
+                left: -.75rem;
+                width: 3px;
+                height: 1.25rem;
+                background: var(--accent);
+                border-radius: 0 3px 3px 0;
+                transform: translateY(-50%) scaleY(0);
+                transition: transform var(--dur-slow) var(--ease-out);
+            }
+
+            .nav-item__label {
+                min-width: 0;
+                overflow: hidden;
+                font-size: var(--text-sm);
+                line-height: 1.25rem;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            /* Rótulo de documento: tipo em caixa alta + país. Reutilizado na topbar. */
+            .doc-name__type {
+                font-weight: 600;
+                letter-spacing: .035em;
+                text-transform: uppercase;
+                color: var(--gray-800);
+                transition: color var(--dur);
+            }
+
+            .doc-name__country {
+                color: var(--text-muted);
+                transition: color var(--dur);
+            }
+
+            .nav-item:hover {
+                background: var(--gray-100);
+            }
+
+            .nav-item:active {
+                background: var(--gray-200);
+            }
+
+            .nav-item:focus-visible {
+                outline-offset: -2px;
+                background: var(--gray-50);
+            }
+
+            .nav-item[aria-current="page"] {
+                background: var(--accent-soft);
+            }
+
+            .nav-item[aria-current="page"]::before {
+                transform: translateY(-50%) scaleY(1);
+            }
+
+            .nav-item[aria-current="page"] .doc-name__type {
+                color: var(--blue-800);
+            }
+
+            .nav-item[aria-current="page"] .doc-name__country {
+                color: var(--blue-600);
+            }
+
+            .nav__empty {
+                display: grid;
+                justify-items: center;
+                gap: .25rem;
+                padding: 1.75rem .75rem;
+                text-align: center;
+            }
+
+            .nav__empty-icon {
+                display: grid;
+                place-items: center;
+                width: 2.5rem;
+                height: 2.5rem;
+                margin-bottom: .375rem;
+                color: var(--gray-500);
+                background: var(--gray-100);
+                border-radius: var(--radius-full);
+            }
+
+            .nav__empty-icon .icon {
+                width: 1.125rem;
+                height: 1.125rem;
+            }
+
+            .nav__empty-title {
+                font-size: var(--text-sm);
+                font-weight: 600;
+                color: var(--gray-800);
+            }
+
+            .nav__empty-text {
+                max-width: 100%;
+                font-size: var(--text-sm);
+                color: var(--text-muted);
+                overflow-wrap: anywhere;
+            }
+
+            .link-btn {
+                margin-top: .375rem;
+                padding: .375rem .625rem;
+                font-size: var(--text-sm);
+                font-weight: 600;
+                color: var(--blue-700);
+                border-radius: var(--radius-sm);
+                transition: background-color var(--dur);
+            }
+
+            .link-btn:hover {
+                background: var(--accent-soft);
+            }
+
+            @media (max-width: 1023.98px) {
+                .nav-item {
+                    min-height: 2.75rem;
+                }
+
+                /* alvo de toque confortável */
+                .nav-item__label {
+                    font-size: var(--text-md);
+                }
+            }
+
+            /* 6.7 Backdrop (drawer mobile) ----------------------------------------- */
+            .backdrop {
+                display: none;
+            }
+
+            @media (max-width: 1023.98px) {
+                .backdrop {
+                    position: fixed;
+                    inset: 0;
+                    z-index: var(--z-backdrop);
+                    display: block;
+                    background: var(--scrim);
+                    opacity: 0;
+                    visibility: hidden;
+                    transition:
+                        opacity var(--dur-slow) var(--ease-out),
+                        visibility 0s linear var(--dur-slow);
+                }
+
+                .is-nav-open .backdrop {
+                    opacity: 1;
+                    visibility: visible;
+                    transition:
+                        opacity var(--dur-slow) var(--ease-out),
+                        visibility 0s;
+                }
+            }
+
+            /* 6.8 Topbar ------------------------------------------------------------ */
+            .topbar {
+                position: sticky;
+                top: 0;
+                z-index: var(--z-topbar);
+                flex: none;
+                display: flex;
+                align-items: center;
+                gap: .75rem;
+                height: var(--topbar-h);
+                padding: 0 var(--gutter);
+                background: rgb(255 255 255 / .86);
+                border-bottom: 1px solid var(--border);
+                -webkit-backdrop-filter: saturate(180%) blur(10px);
+                backdrop-filter: saturate(180%) blur(10px);
+            }
+
+            .topbar__menu {
+                display: none;
+                margin-left: -.375rem;
+            }
+
+            .topbar__title {
+                display: flex;
+                align-items: center;
+                gap: .625rem;
+                min-width: 0;
+                font-size: var(--text-lg);
+            }
+
+            .topbar__title-text {
+                min-width: 0;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            .topbar__title .doc-name__type {
+                color: var(--gray-900);
+            }
+
+            @media (max-width: 1023.98px) {
+                .topbar {
+                    gap: .5rem;
+                    padding-left: max(var(--gutter), env(safe-area-inset-left));
+                    padding-right: max(var(--gutter), env(safe-area-inset-right));
+                }
+
+                .topbar__menu {
+                    display: inline-grid;
+                }
+            }
+
+            /* 6.9 Placeholder de conteúdo ------------------------------------------ */
+            .placeholder {
+                display: grid;
+                align-content: center;
+                justify-items: center;
+                gap: .375rem;
+                min-height: min(60vh, 26rem);
+                padding: 2.5rem 1.5rem;
+                text-align: center;
+                background: rgb(255 255 255 / .6);
+                border: 1.5px dashed var(--border-strong);
+                border-radius: var(--radius-lg);
+            }
+
+            .placeholder .flag {
+                margin-bottom: .75rem;
+            }
+
+            .placeholder__title {
+                font-size: var(--text-lg);
+                font-weight: 600;
+                color: var(--gray-900);
+            }
+
+            .placeholder__text {
+                max-width: 26rem;
+                color: var(--text-muted);
+                text-wrap: balance;
+            }
+        }
+
+        /* 7. Utilitários ========================================================== */
+        @layer utilities {
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0 0 0 0);
+                white-space: nowrap;
+                border: 0;
+            }
+        }
+
+        /* 8. Preferências do usuário ============================================== */
+        @layer preferences {
+            @media (prefers-reduced-motion: reduce) {
+
+                *,
+                *::before,
+                *::after {
+                    transition-duration: .01ms !important;
+                    transition-delay: 0s !important;
+                    animation-duration: .01ms !important;
+                    animation-iteration-count: 1 !important;
+                    scroll-behavior: auto !important;
+                }
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ========================================================================
+       Sprite SVG — ícones de traço (24x24) e bandeiras (20x14)
+       Uso: <svg class="icon"><use href="#i-nome"/></svg>
+       ===================================================================== -->
+    <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <symbol id="i-bolt" viewBox="0 0 24 24">
+            <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+        </symbol>
+        <symbol id="i-search" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.6-3.6" />
+        </symbol>
+        <symbol id="i-x" viewBox="0 0 24 24">
+            <path d="M18 6 6 18M6 6l12 12" />
+        </symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+        </symbol>
+
+        <!-- Brasil: proporção oficial 20x14; faixa calculada como anel (r 8–8,5, centro 8,14)
+         recortado pelo círculo azul. Estrelas omitidas — ilegíveis neste tamanho. -->
+        <symbol id="flag-br" viewBox="0 0 20 14">
+            <rect width="20" height="14" fill="#009739" />
+            <path d="M1.7 7 10 1.7 18.3 7 10 12.3z" fill="#fedd00" />
+            <circle cx="10" cy="7" r="3.5" fill="#012169" />
+            <path
+                d="M6.8 5.59A8.5 8.5 0 0 1 13.47 7.49 3.5 3.5 0 0 1 13.34 8.04 8 8 0 0 0 6.61 6.12 3.5 3.5 0 0 1 6.8 5.59z"
+                fill="#fff" />
+        </symbol>
+    </svg>
+
+    <div class="app">
+
+        <!-- ====================================================================
+         Sidebar
+         ================================================================= -->
+        <aside class="sidebar" id="sidebar" aria-label="Menu lateral">
+            <div class="sidebar__header">
+                <div class="brand">
+                    <span class="brand__mark">
+                        <svg class="icon icon--solid" aria-hidden="true">
+                            <use href="#i-bolt" />
+                        </svg>
+                    </span>
+                    <span class="brand__name">Shazan</span>
+                </div>
+
+                <button class="icon-btn sidebar__close" type="button" aria-label="Fechar menu" data-nav-close>
+                    <svg class="icon" aria-hidden="true">
+                        <use href="#i-x" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="sidebar__search">
+                <div class="search" role="search">
+                    <svg class="icon search__icon" aria-hidden="true">
+                        <use href="#i-search" />
+                    </svg>
+                    <input class="search__input" id="nav-search" type="search" placeholder="Buscar documento…"
+                        aria-label="Buscar documento" aria-controls="nav-list" aria-keyshortcuts="/" autocomplete="off"
+                        autocapitalize="off" spellcheck="false" enterkeyhint="go">
+                    <kbd class="search__kbd" aria-hidden="true">/</kbd>
+                    <button class="search__clear" type="button" aria-label="Limpar busca" data-search-clear>
+                        <svg class="icon" aria-hidden="true">
+                            <use href="#i-x" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <nav class="sidebar__scroll" aria-labelledby="nav-title">
+                <div class="nav__heading">
+                    <h2 class="nav__title" id="nav-title">Documentos</h2>
+                    <span class="nav__count" id="nav-count" aria-hidden="true">0</span>
+                </div>
+
+                <!-- Itens renderizados a partir de DOCS (ver script) -->
+                <ul class="nav__list" id="nav-list" role="list"></ul>
+
+                <div class="nav__empty" id="nav-empty" hidden>
+                    <span class="nav__empty-icon">
+                        <svg class="icon" aria-hidden="true">
+                            <use href="#i-search" />
+                        </svg>
+                    </span>
+                    <p class="nav__empty-title">Nenhum documento encontrado</p>
+                    <p class="nav__empty-text">Nada corresponde a “<span id="nav-empty-query"></span>”.</p>
+                    <button class="link-btn" type="button" data-search-clear>Limpar busca</button>
+                </div>
+
+                <p class="sr-only" id="nav-status" role="status" aria-live="polite"></p>
+            </nav>
+        </aside>
+
+        <div class="backdrop" data-nav-close></div>
+
+        <!-- ====================================================================
+         Área principal
+         ================================================================= -->
+        <div class="main" id="main">
+            <header class="topbar">
+                <button class="icon-btn topbar__menu" id="nav-toggle" type="button" aria-label="Abrir menu"
+                    aria-controls="sidebar" aria-expanded="false">
+                    <svg class="icon" aria-hidden="true">
+                        <use href="#i-menu" />
+                    </svg>
+                </button>
+
+                <h1 class="topbar__title">
+                    <span class="flag" id="page-flag"></span>
+                    <span class="topbar__title-text">
+                        <span class="doc-name__type" id="page-type"></span>
+                        <span class="doc-name__country" id="page-country"></span>
+                    </span>
+                </h1>
+            </header>
+
+            <main class="content" id="content" tabindex="-1">
+
+
+                <!-- Páginas: uma <section data-page="id-do-catálogo"> por documento.
+                     Só a do documento ativo aparece; sem seção própria, cai no placeholder. -->
+                <section class="page" data-page="rg-brasil" hidden>
+                    <div class="duo-img-90">
+                        <div class="duo-img-90-cell">
+                            <p class="txt-duas-linhas opaco" style="--x:50%;--y:50%">
+                                <label data-value="Estado do Piauí"><input type="text" value="Estado do Piauí"
+                                        spellcheck="false" autocomplete="off"
+                                        oninput="this.parentNode.dataset.value=this.value"></label>
+                                <label data-value="Secretaria de Segurança Pública"><input type="text"
+                                        value="Secretaria de Segurança Pública" spellcheck="false" autocomplete="off"
+                                        oninput="this.parentNode.dataset.value=this.value"></label>
+                            </p>
+                            <style>
+                                .txt-duas-linhas {
+                                    position: absolute;
+                                    z-index: 3;
+                                    left: var(--x);
+                                    top: var(--y);
+                                    transform: translate(-30%, -460%) rotate(1deg);
+                                    margin: 0;
+                                    width: max-content;
+                                    max-width: 90%;
+                                    text-align: center;
+                                    font: 400 9px/1.25 sans-serif;
+                                    color: #000;
+                                    font-weight: 450;
+                                }
+
+                                .txt-duas-linhas label {
+                                    display: block;
+                                    position: relative;
+                                    min-width: 1em;
+                                    min-height: 1.25em;
+                                    cursor: text;
+                                }
+
+                                .txt-duas-linhas label::after {
+                                    content: attr(data-value);
+                                    display: block;
+                                    white-space: pre;
+                                    visibility: hidden;
+                                }
+
+                                .txt-duas-linhas input {
+                                    position: absolute;
+                                    inset: 0;
+                                    width: 100%;
+                                    height: 100%;
+                                    margin: 0;
+                                    padding: 0;
+                                    border: 0;
+                                    outline: 0;
+                                    border-radius: 0;
+                                    background: transparent;
+                                    box-shadow: none;
+                                    -webkit-appearance: none;
+                                    appearance: none;
+                                    font: inherit;
+                                    color: inherit;
+                                    text-align: inherit;
+                                }
+                            </style>
+                            <script>
+                                (function () {
+                                    var all = document.querySelectorAll('.txt-duas-linhas');
+                                    for (var n = 0; n < all.length; n++)(function (p, n) {
+                                        if (p._ls) return; p._ls = 1;
+                                        var base = 'txt-duas-linhas:' + location.pathname + ':' + (p.getAttribute('data-key') || n) + ':',
+                                            ins = p.querySelectorAll('input');
+                                        for (var i = 0; i < ins.length; i++)(function (inp, i) {
+                                            var k = base + i, v = null;
+                                            try { v = localStorage.getItem(k) } catch (e) { }
+                                            if (v !== null) { inp.value = v; inp.parentNode.dataset.value = v }
+                                            inp.addEventListener('input', function () { try { localStorage.setItem(k, inp.value) } catch (e) { } });
+                                        })(ins[i], i);
+                                    })(all[n], n);
+                                })();
+                            </script><label class="img-input-pos" style="--x:50%;--y:50%;--r:0deg">
+                                <input type="file" accept="image/*" hidden>
+                                <span>+</span>
+                            </label>
+                            <style>
+                                .img-input-pos {
+                                    position: absolute;
+                                    z-index: 2;
+                                    left: var(--x);
+                                    top: var(--y);
+                                    transform: translate(-123%, -50%) rotate(1deg);
+                                    width: 125px;
+                                    height: 160px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    box-sizing: border-box;
+                                    border: 2px dashed #999;
+                                    border-radius: 0px;
+                                    background: #f3f3f3 center/cover no-repeat;
+                                    color: #999;
+                                    font: 32px sans-serif;
+                                    cursor: pointer;
+                                    overflow: hidden
+                                }
+
+                                .img-input-pos.filled {
+                                    border: 0
+                                }
+
+                                .img-input-pos.filled span {
+                                    display: none
+                                }
+                            </style>
+                            <script>
+                                (function () {
+                                    var all = document.querySelectorAll('.img-input-pos');
+                                    for (var n = 0; n < all.length; n++)(function (l, n) {
+                                        if (l._ls) return; l._ls = 1;
+                                        var k = 'img-input-pos:' + location.pathname + ':' + (l.getAttribute('data-key') || n),
+                                            inp = l.querySelector('input'), saved = null;
+                                        function show(src) { l.style.backgroundImage = 'url("' + src + '")'; l.classList.add('filled') }
+                                        try { saved = localStorage.getItem(k) } catch (e) { }
+                                        if (saved) show(saved);
+                                        inp.addEventListener('change', function () {
+                                            var f = inp.files[0]; if (!f) return;
+                                            var u = window.URL.createObjectURL(f), im = new Image();
+                                            im.onload = function () {
+                                                var W = (l.offsetWidth || 125) * 3, H = (l.offsetHeight || 160) * 3,
+                                                    s = Math.max(W / im.width, H / im.height), sw = W / s, sh = H / s,
+                                                    c = document.createElement('canvas');
+                                                c.width = W; c.height = H;
+                                                c.getContext('2d').drawImage(im, (im.width - sw) / 2, (im.height - sh) / 2, sw, sh, 0, 0, W, H);
+                                                window.URL.revokeObjectURL(u);
+                                                var d = c.toDataURL('image/jpeg', .9);
+                                                show(d);
+                                                try { localStorage.setItem(k, d) } catch (e) { }
+                                            };
+                                            im.src = u;
+                                        });
+                                    })(all[n], n);
+                                })();
+                            </script>
+                            <style>
+                                .img-input-pos {
+                                    position: absolute;
+                                    z-index: 2;
+                                    left: var(--x);
+                                    top: var(--y);
+                                    transform: translate(-138%, -50%) rotate(1deg);
+                                    width: 110px;
+                                    height: 160px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    box-sizing: border-box;
+                                    border: 2px dashed #999;
+                                    border-radius: 2px;
+                                    background: #f3f3f3 center/cover no-repeat;
+                                    color: #999;
+                                    font: 32px sans-serif;
+                                    cursor: pointer;
+                                    overflow: hidden;
+                                    opacity: .9;
+                                    filter: blur(.4px) contrast(.95) grayscale(.2) drop-shadow(0 0 3px #dfd8d8)
+                                }
+
+                                .img-input-pos.filled::after {
+                                    content: "";
+                                    position: absolute;
+                                    inset: 0;
+                                    pointer-events: none;
+                                    background:
+                                        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .15 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+                                        radial-gradient(ellipse at center, transparent 65%, rgba(90, 60, 20, .18) 100%);
+                                    mix-blend-mode: multiply;
+                                    opacity: .3;
+                                }
+
+
+
+                                .img-input-pos.filled {
+                                    border: 0
+                                }
+
+                                .img-input-pos.filled span {
+                                    display: none
+                                }
+                            </style><!-- CONTAINER DE TEXTOS – CRACHÁ (110x250) -->
+                            <div class="dados-crach" style="--x:50%;--y:50%;--r:1deg;">
+
+                                <!-- Linha 1 -->
+                                <p class="crach-par opaco">
+                                    <label style="font-size: 8.5px !important;" data-value="Nome / Name"><input
+                                            type="text" value="Nome / Name" spellcheck="false" autocomplete="off"
+                                            oninput="this.parentNode.dataset.value=this.value"></label>
+                                    <label style="text-transform: uppercase;" data-value="LUÍS FELIPE FREITAS DE SOUSA"
+                                        class="bold up"><input type="text" value="LUÍS FELIPE FREITAS DE SOUSA"
+                                            spellcheck="false" autocomplete="off"
+                                            oninput="this.parentNode.dataset.value=this.value"></label>
+                                </p>
+
+                                <!-- Linha 2 -->
+                                <p class="crach-uma opaco">
+                                    <label style="font-size: 8.5px !important;"
+                                        data-value="Nome Social / Social Name"><input type="text"
+                                            value="Nome Social / Social Name" spellcheck="false" autocomplete="off"
+                                            oninput="this.parentNode.dataset.value=this.value"></label>
+                                </p>
+
+                                <!-- Linha 3 -->
+                                <div class="crach-dupla">
+                                    <p class="crach-par opaco">
+                                        <label style="font-size: 8.5px !important;"
+                                            data-value="Registro Geral - CPF / Personal Name"><input type="text"
+                                                value="Registro Geral - CPF / Personal Name" spellcheck="false"
+                                                autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                        <label style="font-size: 11px !important; letter-spacing: 1px !important;"
+                                            data-value="025.345.678-10" class="bold up big"><input type="text"
+                                                value="025.345.678-10" spellcheck="false" autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                    </p>
+                                    <p class="crach-par opaco">
+                                        <label style="font-size: 8.5px !important;" data-value="Sexo / Sex"><input
+                                                type="text" value="Sexo / Sex" spellcheck="false" autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                        <label data-value="M" class="bold"><input type="text" value="M"
+                                                spellcheck="false" autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                    </p>
+                                </div>
+
+                                <!-- Linha 4 -->
+                                <div class="crach-dupla">
+                                    <p class="crach-par opaco">
+                                        <label style="font-size: 8.5px !important;"
+                                            data-value="Data de Nascimento / Date of Birth"><input type="text"
+                                                value="Data de Nascimento / Date of Birth" spellcheck="false"
+                                                autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                        <label data-value="05/02/2004" class="bold up"><input type="text"
+                                                value="05/02/2004" spellcheck="false" autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                    </p>
+                                    <p class="crach-par opaco">
+                                        <label style="font-size: 8.5px !important;"
+                                            data-value="Nacionalidade / Nationality"><input type="text"
+                                                value="Nacionalidade / Nationality" spellcheck="false"
+                                                autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                        <label data-value="BRA" class="bold"><input type="text" value="BRA"
+                                                spellcheck="false" autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                    </p>
+                                </div>
+
+                                <!-- Linha 5 -->
+                                <div class="crach-dupla">
+                                    <p class="crach-par opaco">
+                                        <label style="font-size: 8.5px !important;"
+                                            data-value="Naturalidade / Place of Birth"><input type="text"
+                                                value="Naturalidade / Place of Birth" spellcheck="false"
+                                                autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                        <label data-value="SÃO RAIMUNDO NONATO/PI" class="bold up"><input type="text"
+                                                value="SÃO RAIMUNDO NONATO/PI" spellcheck="false" autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                    </p>
+                                    <p class="crach-par opaco">
+                                        <label style="font-size: 8.5px !important;"
+                                            data-value="Validade / Expiry"><input type="text" value="Validade / Expiry"
+                                                spellcheck="false" autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                        <label data-value="20/03/2035" class="bold"><input type="text"
+                                                value="20/03/2035" spellcheck="false" autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value"></label>
+                                    </p>
+                                </div>
+
+                            </div>
+                            <style>
+                                .dados-crach {
+                                    position: absolute;
+                                    z-index: 4;
+                                    left: var(--x);
+                                    top: var(--y);
+                                    transform: translate(-15%, -48%) rotate(var(--r, 0deg));
+                                    width: 240px;
+                                    height: 160px;
+                                    box-sizing: border-box;
+                                    overflow: hidden;
+                                    display: flex;
+                                    flex-direction: column;
+                                    justify-content: flex-start;
+                                    text-align: left;
+                                    font: 450 9px/1.25 sans-serif;
+                                    color: #000;
+                                }
+
+                                .dados-crach p {
+                                    margin: 0;
+                                    padding: 0;
+                                }
+
+                                .dados-crach .crach-uma {
+                                    margin-top: 8px;
+                                }
+
+                                .dados-crach .crach-dupla {
+                                    margin-top: 8px;
+                                }
+
+                                .dados-crach .crach-dupla+.crach-dupla {
+                                    margin-top: 3px;
+                                }
+
+                                .dados-crach .crach-par,
+                                .dados-crach .crach-uma {
+                                    width: max-content;
+                                }
+
+                                .dados-crach label {
+                                    display: block;
+                                    position: relative;
+                                    min-width: 1em;
+                                    min-height: 1.15em;
+                                    cursor: text;
+                                }
+
+                                .dados-crach label::after {
+                                    content: attr(data-value);
+                                    display: block;
+                                    white-space: pre;
+                                }
+
+                                .dados-crach input {
+                                    position: absolute;
+                                    inset: 0;
+                                    width: 100%;
+                                    height: 100%;
+                                    margin: 0;
+                                    padding: 0;
+                                    border: 0;
+                                    outline: 0;
+                                    border-radius: 0;
+                                    background: transparent;
+                                    box-shadow: none;
+                                    -webkit-appearance: none;
+                                    appearance: none;
+                                    font: inherit;
+                                    color: inherit;
+                                    text-align: left;
+                                }
+
+                                .dados-crach .bold {
+                                    font-weight: 700;
+                                }
+
+                                .dados-crach .up {
+                                    text-transform: uppercase;
+                                }
+
+                                .dados-crach .big {
+                                    font-size: 10px;
+                                }
+
+                                .dados-crach .crach-dupla {
+                                    width: 100%;
+                                    display: flex;
+                                    align-items: flex-start;
+                                    justify-content: space-between;
+                                    gap: 4px;
+                                }
+
+                                .crach-uma {
+                                    padding: 0.5rem 0 !important;
+                                }
+
+                                .dados-crach .crach-dupla>.crach-par {
+                                    flex: 0 1 auto;
+                                    min-width: 0;
+                                }
+                            </style>
+                            <script>
+                                (function () {
+                                    var all = document.querySelectorAll('.dados-crach');
+                                    for (var n = 0; n < all.length; n++)(function (c, n) {
+                                        if (c._ls) return; c._ls = 1;
+                                        var base = 'dados-crach:' + location.pathname + ':' + (c.getAttribute('data-key') || n) + ':',
+                                            ins = c.querySelectorAll('input');
+                                        for (var i = 0; i < ins.length; i++)(function (inp, i) {
+                                            var k = base + i, v = null;
+                                            try { v = localStorage.getItem(k) } catch (e) { }
+                                            if (v !== null) { inp.value = v; inp.parentNode.dataset.value = v }
+                                            inp.addEventListener('input', function () {
+                                                inp.parentNode.dataset.value = inp.value;
+                                                try { localStorage.setItem(k, inp.value) } catch (e) { }
+                                            });
+                                        })(ins[i], i);
+                                    })(all[n], n);
+                                })();
+                            </script><!-- COMPONENTE: ASSINATURA DO FUNCIONÁRIO -->
+                            <div class="assinatura-funcionario" style="--x:50%;--y:50%;">
+
+                                <input style="opacity: 0.6;" class="assinatura-texto opaco" type="text"
+                                    value="Assinatura" spellcheck="false" autocomplete="off"
+                                    oninput="this.parentNode.dataset.assinatura=this.value">
+
+                                <input style="font-size: 6px !important;" class="assinatura-nome opaco" type="text"
+                                    value="Assinatura do Titular / Cardholder`s Signature" spellcheck="false"
+                                    autocomplete="off" oninput="this.parentNode.dataset.nome=this.value">
+
+                            </div>
+                            <style>
+                                .assinatura-funcionario {
+                                    position: absolute;
+                                    z-index: 5;
+
+                                    left: var(--x);
+                                    top: var(--y);
+
+                                    transform: translate(-15%, 240%);
+
+                                    width: 200px;
+                                    height: 32px;
+
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                    justify-content: flex-end;
+
+                                    box-sizing: border-box;
+                                    overflow: hidden;
+
+                                    color: #000;
+                                    text-align: center;
+                                }
+
+                                .assinatura-funcionario input {
+                                    display: block;
+
+                                    width: 100%;
+                                    height: auto;
+
+                                    margin: 0;
+                                    padding: 0;
+
+                                    border: 0;
+                                    outline: 0;
+                                    background: transparent;
+                                    box-shadow: none;
+
+                                    -webkit-appearance: none;
+                                    appearance: none;
+
+                                    color: #000;
+                                    text-align: center;
+                                }
+
+                                .assinatura-texto {
+                                    font-family: "Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive !important;
+                                    font-size: 14px !important;
+                                    font-weight: 400;
+                                    line-height: 1;
+                                }
+
+                                .assinatura-texto {
+                                    font-size: 14px !important;
+                                }
+
+                                .assinatura-texto:nth-child(1) {
+                                    font-family: "Brush Script MT", cursive !important;
+                                }
+
+                                .assinatura-texto:nth-child(2) {
+                                    font-family: "Segoe Script", cursive !important;
+                                }
+
+                                .assinatura-nome {
+                                    font-family: sans-serif !important;
+                                    font-size: 7px !important;
+                                    font-weight: 700;
+                                    line-height: 1.1;
+                                    letter-spacing: .2px;
+                                }
+                            </style>
+                            <script>
+                                (function () {
+                                    var all = document.querySelectorAll('.assinatura-funcionario');
+
+                                    for (var n = 0; n < all.length; n++) {
+                                        (function (box, index) {
+
+                                            if (box._ls) return;
+                                            box._ls = 1;
+
+                                            var inputs = box.querySelectorAll('input');
+
+                                            for (var i = 0; i < inputs.length; i++) {
+                                                (function (input, i) {
+
+                                                    var key =
+                                                        'assinatura-funcionario:' +
+                                                        location.pathname + ':' +
+                                                        (box.getAttribute('data-key') || index) +
+                                                        ':' + i;
+
+                                                    var saved = null;
+
+                                                    try {
+                                                        saved = localStorage.getItem(key);
+                                                    } catch (e) { }
+
+                                                    if (saved !== null) {
+                                                        input.value = saved;
+                                                    }
+
+                                                    input.addEventListener('input', function () {
+                                                        try {
+                                                            localStorage.setItem(key, input.value);
+                                                        } catch (e) { }
+                                                    });
+
+                                                })(inputs[i], i);
+                                            }
+
+                                        })(all[n], n);
+                                    }
+                                })();
+                            </script><img src="/rg_frente.png" alt="">
+                        </div>
+                        <div class="duo-img-90-cell"><!-- ============================================================
+                             IMAGEM 2 — CABEÇALHO
+                             ============================================================ -->
+
+
+
+                            <style>
+                                /* CABEÇALHO DA IMAGEM 2 */
+                                .txt-duas-linhas-2 {
+                                    position: absolute;
+                                    z-index: 3;
+
+                                    left: var(--x);
+                                    top: var(--y);
+
+                                    transform: translate(-30%, -460%) rotate(1deg);
+
+                                    margin: 0;
+                                    width: max-content;
+                                    max-width: 90%;
+
+                                    text-align: center;
+
+                                    font: 400 9px/1.25 sans-serif;
+                                    color: #000;
+                                    font-weight: 450;
+                                }
+
+                                .txt-duas-linhas-2 label {
+                                    display: block;
+                                    position: relative;
+
+                                    min-width: 1em;
+                                    min-height: 1.25em;
+
+                                    cursor: text;
+                                }
+
+                                .txt-duas-linhas-2 label::after {
+                                    content: attr(data-value);
+
+                                    display: block;
+                                    white-space: pre;
+                                    visibility: hidden;
+                                }
+
+                                .txt-duas-linhas-2 input {
+                                    position: absolute;
+                                    inset: 0;
+
+                                    width: 100%;
+                                    height: 100%;
+
+                                    margin: 0;
+                                    padding: 0;
+
+                                    border: 0;
+                                    outline: 0;
+                                    border-radius: 0;
+
+                                    background: transparent;
+                                    box-shadow: none;
+
+                                    -webkit-appearance: none;
+                                    appearance: none;
+
+                                    font: inherit;
+                                    color: inherit;
+                                    text-align: inherit;
+                                }
+                            </style>
+
+                            <script>
+                                /* SALVAMENTO DOS TEXTOS DA IMAGEM 2 */
+                                (function () {
+
+                                    var all = document.querySelectorAll(
+                                        '.txt-duas-linhas-2[data-key="2"]'
+                                    );
+
+                                    for (var n = 0; n < all.length; n++) {
+
+                                        (function (p) {
+
+                                            if (p._ls2) return;
+                                            p._ls2 = 1;
+
+                                            var base =
+                                                'txt-duas-linhas-2:' +
+                                                location.pathname +
+                                                ':2:';
+
+                                            var inputs = p.querySelectorAll('input');
+
+                                            for (var i = 0; i < inputs.length; i++) {
+
+                                                (function (input, i) {
+
+                                                    var key = base + i;
+                                                    var saved = null;
+
+                                                    try {
+                                                        saved = localStorage.getItem(key);
+                                                    } catch (e) { }
+
+                                                    if (saved !== null) {
+                                                        input.value = saved;
+                                                        input.parentNode.dataset.value = saved;
+                                                    }
+
+                                                    input.addEventListener('input', function () {
+
+                                                        input.parentNode.dataset.value =
+                                                            input.value;
+
+                                                        try {
+                                                            localStorage.setItem(
+                                                                key,
+                                                                input.value
+                                                            );
+                                                        } catch (e) { }
+
+                                                    });
+
+                                                })(inputs[i], i);
+                                            }
+
+                                        })(all[n]);
+                                    }
+
+                                })();
+                            </script>
+
+
+                            <!-- ============================================================
+                             IMAGEM 2 — FOTO
+                             
+                             A FOTO CONTINUA COMPARTILHADA COM A IMAGEM 1.
+                             ============================================================ -->
+
+                            <label class="img-input-pos-2" data-key="2" style="--x:50%;--y:50%;--r:0deg;">
+
+                                <input type="file" accept="image/*" hidden>
+
+                                <span>+</span>
+
+                            </label>
+
+                            <style>
+                                /* FOTO DA IMAGEM 2 */
+                                .img-input-pos-2 {
+                                    position: absolute;
+                                    z-index: 2;
+
+                                    left: var(--x);
+                                    top: var(--y);
+
+                                    transform: translate(440%, -350%) rotate(1deg);
+
+                                    width: 30px;
+                                    height: 40px;
+
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+
+                                    box-sizing: border-box;
+
+                                    border: 2px dashed #999;
+                                    border-radius: 2px;
+
+                                    background: #f3f3f3 center/cover no-repeat;
+
+                                    color: #999;
+                                    font: 32px sans-serif;
+
+                                    cursor: pointer;
+                                    overflow: hidden;
+
+                                    opacity: .6;
+
+                                    filter:
+                                        blur(.4px) contrast(.95) grayscale(.2) drop-shadow(0 0 3px #dfd8d8);
+                                }
+
+                                .img-input-pos-2.filled {
+                                    border: 0;
+                                }
+
+                                .img-input-pos-2.filled span {
+                                    display: none;
+                                }
+
+                                .img-input-pos-2.filled::after {
+                                    content: "";
+
+                                    position: absolute;
+                                    inset: 0;
+
+                                    pointer-events: none;
+
+                                    background:
+                                        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 .15 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+                                        radial-gradient(ellipse at center,
+                                            transparent 65%,
+                                            rgba(90, 60, 20, .18) 100%);
+
+                                    mix-blend-mode: multiply;
+                                    opacity: .3;
+                                }
+                            </style>
+
+                            <script>
+                                /* ============================================================
+                                   FOTO COMPARTILHADA — IMAGEM 1 + IMAGEM 2
+                                   ============================================================ */
+
+                                (function () {
+
+                                    /*
+                                     * A IMAGEM 1 continua sendo a primeira
+                                     * .img-input-pos existente no documento.
+                                     */
+                                    var imagem1 =
+                                        document.querySelector('.img-input-pos');
+
+                                    /*
+                                     * A IMAGEM 2 usa exclusivamente a nova classe.
+                                     */
+                                    var imagem2 =
+                                        document.querySelector('.img-input-pos-2');
+
+                                    if (!imagem1 || !imagem2) return;
+
+                                    /*
+                                     * CHAVE ÚNICA DA FOTO COMPARTILHADA
+                                     */
+                                    var storageKey =
+                                        'imagem-compartilhada:2:' +
+                                        location.pathname;
+
+                                    /* MOSTRA A FOTO */
+                                    function mostrarFoto(box, src) {
+
+                                        box.style.backgroundImage =
+                                            'url("' + src + '")';
+
+                                        box.classList.add('filled');
+                                    }
+
+                                    /* RECUPERA FOTO SALVA */
+                                    var saved = null;
+
+                                    try {
+                                        saved = localStorage.getItem(storageKey);
+                                    } catch (e) { }
+
+                                    if (saved) {
+
+                                        mostrarFoto(imagem1, saved);
+                                        mostrarFoto(imagem2, saved);
+
+                                    } else {
+
+                                        /*
+                                         * TENTA PEGAR A FOTO QUE JÁ EXISTIA
+                                         * NO COMPONENTE DA IMAGEM 1.
+                                         */
+                                        try {
+
+                                            var antiga =
+                                                localStorage.getItem(
+                                                    'img-input-pos:' +
+                                                    location.pathname +
+                                                    ':0'
+                                                );
+
+                                            if (antiga) {
+
+                                                mostrarFoto(imagem1, antiga);
+                                                mostrarFoto(imagem2, antiga);
+
+                                                localStorage.setItem(
+                                                    storageKey,
+                                                    antiga
+                                                );
+                                            }
+
+                                        } catch (e) { }
+                                    }
+
+                                    /*
+                                     * ATIVA O INPUT DA IMAGEM 1 E DA IMAGEM 2
+                                     */
+                                    var caixas = [imagem1, imagem2];
+
+                                    for (var n = 0; n < caixas.length; n++) {
+
+                                        (function (box) {
+
+                                            var input = box.querySelector('input');
+
+                                            if (!input || input._imagemCompartilhada2) {
+                                                return;
+                                            }
+
+                                            input._imagemCompartilhada2 = 1;
+
+                                            input.addEventListener('change', function () {
+
+                                                var file = input.files[0];
+
+                                                if (!file) return;
+
+                                                var url =
+                                                    window.URL.createObjectURL(file);
+
+                                                var img = new Image();
+
+                                                img.onload = function () {
+
+                                                    /*
+                                                     * TAMANHO DA FOTO
+                                                     */
+                                                    var W = 110 * 3;
+                                                    var H = 160 * 3;
+
+                                                    /*
+                                                     * CÁLCULO DO CROP
+                                                     */
+                                                    var escala = Math.max(
+                                                        W / img.width,
+                                                        H / img.height
+                                                    );
+
+                                                    var sw = W / escala;
+                                                    var sh = H / escala;
+
+                                                    /*
+                                                     * CANVAS
+                                                     */
+                                                    var canvas =
+                                                        document.createElement('canvas');
+
+                                                    canvas.width = W;
+                                                    canvas.height = H;
+
+                                                    canvas
+                                                        .getContext('2d')
+                                                        .drawImage(
+                                                            img,
+                                                            (img.width - sw) / 2,
+                                                            (img.height - sh) / 2,
+                                                            sw,
+                                                            sh,
+                                                            0,
+                                                            0,
+                                                            W,
+                                                            H
+                                                        );
+
+                                                    window.URL.revokeObjectURL(url);
+
+                                                    /*
+                                                     * CONVERTE A FOTO
+                                                     */
+                                                    var data =
+                                                        canvas.toDataURL(
+                                                            'image/jpeg',
+                                                            .9
+                                                        );
+
+                                                    /*
+                                                     * MESMA FOTO NAS DUAS
+                                                     */
+                                                    mostrarFoto(imagem1, data);
+                                                    mostrarFoto(imagem2, data);
+
+                                                    /*
+                                                     * SALVA A FOTO COMPARTILHADA
+                                                     */
+                                                    try {
+
+                                                        localStorage.setItem(
+                                                            storageKey,
+                                                            data
+                                                        );
+
+                                                    } catch (e) { }
+
+                                                };
+
+                                                img.src = url;
+
+                                            });
+
+                                        })(caixas[n]);
+                                    }
+
+                                })();
+                            </script>
+
+
+                            <!-- ============================================================
+                             IMAGEM 2 — DADOS DO CRACHÁ
+                             ============================================================ -->
+
+                            <div class="dados-crach-2" data-key="2" style="--x:50%;--y:50%;--r:1deg;">
+
+                                <!-- NOME -->
+                                <p class="crach-par-2 opaco">
+
+                                    <label style="font-size:8.5px !important;" data-value="Filiação / Filiation">
+                                        <input type="text" value="Filiação / Filiation" spellcheck="false"
+                                            autocomplete="off" oninput="this.parentNode.dataset.value=this.value">
+                                    </label>
+
+                                    <label data-value="SUELY MARTINS DOS REIS" class="bold-2 up-2">
+                                        <input type="text" value="SUELY MARTINS DOS REIS" spellcheck="false"
+                                            autocomplete="off" oninput="this.parentNode.dataset.value=this.value">
+                                    </label>
+
+                                    <label style="margin-top: 0.8rem !important" data-value="JÚLIO DOS SANTOS PAIS"
+                                        class="bold-2 up-2">
+                                        <input type="text" value="JÚLIO DOS SANTOS PAIS" spellcheck="false"
+                                            autocomplete="off" oninput="this.parentNode.dataset.value=this.value">
+                                    </label>
+
+                                </p>
+
+
+
+
+                                <!-- DATA DE NASCIMENTO + NACIONALIDADE -->
+                                <div class="crach-uma-2">
+
+                                    <!-- DATA DE NASCIMENTO -->
+                                    <p class="crach-par-2 opaco">
+
+                                        <label style="font-size:8.5px !important;"
+                                            data-value="Órgão Expeditor / Card Issuer">
+                                            <input type="text" value="Órgão Expeditor / Card Issuer" spellcheck="false"
+                                                autocomplete="off" oninput="this.parentNode.dataset.value=this.value">
+                                        </label>
+
+                                        <label data-value="SSP/PI" class="bold-2 up-2">
+                                            <input type="text" value="SSP/PI" spellcheck="false" autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value">
+                                        </label>
+
+                                    </p>
+
+
+
+                                </div>
+
+
+                                <!-- NATURALIDADE + VALIDADE -->
+                                <div class="crach-dupla-2">
+
+                                    <!-- NATURALIDADE -->
+                                    <p class="crach-par-2 opaco">
+
+                                        <label style="font-size:8.5px !important;" data-value="Local / Place of Issue">
+                                            <input type="text" value="Local / Place of Issue" spellcheck="false"
+                                                autocomplete="off" oninput="this.parentNode.dataset.value=this.value">
+                                        </label>
+
+                                        <label data-value="SÃO RAIMUNDO NONATO/PI" class="bold-2 up-2">
+                                            <input type="text" value="SÃO RAIMUNDO NONATO/PI" spellcheck="false"
+                                                autocomplete="off" oninput="this.parentNode.dataset.value=this.value">
+                                        </label>
+
+                                    </p>
+
+                                    <!-- VALIDADE -->
+                                    <p class="crach-par-2 opaco">
+
+                                        <label style="font-size:8.5px !important;" data-value="Emissão / Issue">
+                                            <input type="text" value="Emissão / Issue" spellcheck="false"
+                                                autocomplete="off" oninput="this.parentNode.dataset.value=this.value">
+                                        </label>
+
+                                        <label data-value="20/03/2019" class="bold-2">
+                                            <input type="text" value="20/03/2019" spellcheck="false" autocomplete="off"
+                                                oninput="this.parentNode.dataset.value=this.value">
+                                        </label>
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <style>
+                                /* ============================================================
+                           ESTILO DOS DADOS DO CRACHÁ — IMAGEM 2
+                           ============================================================ */
+
+                                .dados-crach-2 {
+                                    position: absolute;
+                                    z-index: 4;
+
+                                    left: var(--x);
+                                    top: var(--y);
+
+                                    transform:
+                                        translate(-33%, -65%) rotate(var(--r, 0deg));
+
+                                    width: 240px;
+                                    height: 160px;
+
+                                    box-sizing: border-box;
+                                    overflow: hidden;
+
+                                    display: flex;
+                                    flex-direction: column;
+                                    justify-content: flex-start;
+
+                                    text-align: left;
+
+                                    font: 450 9px/1.25 sans-serif;
+                                    color: #000;
+                                }
+
+                                .dados-crach-2 p {
+                                    margin: 0;
+                                    padding: 0;
+                                }
+
+                                .dados-crach-2 .crach-uma-2 {
+                                    margin-top: 8px;
+                                }
+
+                                .dados-crach-2 .crach-dupla-2 {
+                                    margin-top: 8px;
+                                }
+
+                                .dados-crach-2 .crach-dupla-2+.crach-dupla-2 {
+                                    margin-top: 3px;
+                                }
+
+                                .dados-crach-2 .crach-par-2,
+                                .dados-crach-2 .crach-uma-2 {
+                                    width: max-content;
+                                }
+
+                                .dados-crach-2 label {
+                                    display: block;
+                                    position: relative;
+
+                                    min-width: 1em;
+                                    min-height: 1.15em;
+
+                                    cursor: text;
+                                }
+
+                                .dados-crach-2 label::after {
+                                    content: attr(data-value);
+
+                                    display: block;
+                                    white-space: pre;
+                                }
+
+                                .dados-crach-2 input {
+                                    position: absolute;
+                                    inset: 0;
+
+                                    width: 100%;
+                                    height: 100%;
+
+                                    margin: 0;
+                                    padding: 0;
+
+                                    border: 0;
+                                    outline: 0;
+
+                                    background: transparent;
+                                    box-shadow: none;
+
+                                    -webkit-appearance: none;
+                                    appearance: none;
+
+                                    font: inherit;
+                                    color: inherit;
+                                    text-align: left;
+                                }
+
+                                .dados-crach-2 .bold-2 {
+                                    font-weight: 700;
+                                }
+
+                                .dados-crach-2 .up-2 {
+                                    text-transform: uppercase;
+                                }
+
+                                .dados-crach-2 .big-2 {
+                                    font-size: 10px;
+                                }
+
+                                .dados-crach-2 .crach-dupla-2 {
+                                    width: 100%;
+
+                                    display: flex;
+                                    align-items: flex-start;
+                                    justify-content: space-between;
+
+                                    gap: 4px;
+                                }
+
+                                .crach-uma-2 {
+                                    padding: .5rem 0 !important;
+                                }
+
+                                .dados-crach-2 .crach-dupla-2>.crach-par-2 {
+                                    flex: 0 1 auto;
+                                    min-width: 0;
+                                }
+                            </style>
+
+                            <script>
+                                /* SALVAMENTO DOS DADOS DO CRACHÁ — IMAGEM 2 */
+                                (function () {
+
+                                    var all = document.querySelectorAll(
+                                        '.dados-crach-2[data-key="2"]'
+                                    );
+
+                                    for (var n = 0; n < all.length; n++) {
+
+                                        (function (container) {
+
+                                            if (container._ls2) return;
+                                            container._ls2 = 1;
+
+                                            var base =
+                                                'dados-crach-2:' +
+                                                location.pathname +
+                                                ':2:';
+
+                                            var inputs =
+                                                container.querySelectorAll('input');
+
+                                            for (var i = 0; i < inputs.length; i++) {
+
+                                                (function (input, i) {
+
+                                                    var key = base + i;
+                                                    var saved = null;
+
+                                                    try {
+                                                        saved = localStorage.getItem(key);
+                                                    } catch (e) { }
+
+                                                    if (saved !== null) {
+
+                                                        input.value = saved;
+
+                                                        input.parentNode.dataset.value =
+                                                            saved;
+                                                    }
+
+                                                    input.addEventListener(
+                                                        'input',
+                                                        function () {
+
+                                                            input.parentNode.dataset.value =
+                                                                input.value;
+
+                                                            try {
+                                                                localStorage.setItem(
+                                                                    key,
+                                                                    input.value
+                                                                );
+                                                            } catch (e) { }
+
+                                                        }
+                                                    );
+
+                                                })(inputs[i], i);
+                                            }
+
+                                        })(all[n]);
+                                    }
+
+                                })();
+                            </script>
+
+
+                            <!-- ============================================================
+                             IMAGEM 2 — ASSINATURA DO FUNCIONÁRIO
+                             ============================================================ -->
+
+                            <div class="assinatura-funcionario-2" data-key="2" style="--x:50%;--y:50%;">
+
+                                <!-- ASSINATURA -->
+                                <input style="opacity:.6;" class="assinatura-texto-2 opaco" type="text"
+                                    value="Assinatura" spellcheck="false" autocomplete="off"
+                                    oninput="this.parentNode.dataset.assinatura=this.value">
+
+                                <!-- TEXTO ABAIXO DA ASSINATURA -->
+                                <input style="font-size:6px !important;" class="assinatura-nome-2 opaco" type="text"
+                                    value="Assinatura do Expeditor / Card Issuer Signature" spellcheck="false"
+                                    autocomplete="off" oninput="this.parentNode.dataset.nome=this.value">
+                                <input style="font-size:6px !important;" class="assinatura-nome-2 opaco" type="text"
+                                    value="Marcelo dos Anjos Mascarenha" spellcheck="false" autocomplete="off"
+                                    oninput="this.parentNode.dataset.nome=this.value">
+                                <input style="font-size:6px !important;" class="assinatura-nome-2 opaco" type="text"
+                                    value="Diretor Geral do Instituto de Ident. Digital 'Félix Pacheco'"
+                                    spellcheck="false" autocomplete="off"
+                                    oninput="this.parentNode.dataset.nome=this.value">
+
+                            </div>
+
+                            <style>
+                                /* POSIÇÃO DA ASSINATURA — IMAGEM 2 */
+                                .assinatura-funcionario-2 {
+                                    position: absolute;
+                                    z-index: 5;
+
+                                    left: var(--x);
+                                    top: var(--y);
+
+                                    transform: translate(-30%, 80%);
+
+                                    width: 200px;
+                                    height: 40px;
+
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                    justify-content: flex-end;
+
+                                    box-sizing: border-box;
+                                    overflow: hidden;
+
+                                    color: #000;
+                                    text-align: center;
+                                }
+
+                                /* INPUTS DA ASSINATURA — IMAGEM 2 */
+                                .assinatura-funcionario-2 input {
+                                    display: block;
+
+                                    width: 100%;
+                                    height: auto;
+
+                                    margin: 0;
+                                    padding: 0;
+
+                                    border: 0;
+                                    outline: 0;
+
+                                    background: transparent;
+                                    box-shadow: none;
+
+                                    -webkit-appearance: none;
+                                    appearance: none;
+
+                                    color: #000;
+                                    text-align: center;
+                                }
+
+                                /* FONTE DA ASSINATURA — IMAGEM 2 */
+                                .assinatura-texto-2 {
+                                    font-family:
+                                        "Brush Script MT",
+                                        "Segoe Script",
+                                        "Lucida Handwriting",
+                                        cursive !important;
+
+                                    font-size: 14px !important;
+                                    font-weight: 400;
+                                    line-height: 1;
+                                }
+
+                                /* TEXTO ABAIXO DA ASSINATURA — IMAGEM 2 */
+                                .assinatura-nome-2 {
+                                    font-family: sans-serif !important;
+
+                                    font-size: 7px !important;
+                                    font-weight: 700;
+
+                                    line-height: 1.1;
+                                    letter-spacing: .2px;
+                                }
+                            </style>
+
+                            <script>
+                                /* SALVAMENTO DA ASSINATURA — IMAGEM 2 */
+                                (function () {
+
+                                    var all = document.querySelectorAll(
+                                        '.assinatura-funcionario-2[data-key="2"]'
+                                    );
+
+                                    for (var n = 0; n < all.length; n++) {
+
+                                        (function (box) {
+
+                                            if (box._ls2) return;
+                                            box._ls2 = 1;
+
+                                            var inputs =
+                                                box.querySelectorAll('input');
+
+                                            for (var i = 0; i < inputs.length; i++) {
+
+                                                (function (input, i) {
+
+                                                    var key =
+                                                        'assinatura-funcionario-2:' +
+                                                        location.pathname +
+                                                        ':2:' +
+                                                        i;
+
+                                                    var saved = null;
+
+                                                    try {
+                                                        saved =
+                                                            localStorage.getItem(key);
+                                                    } catch (e) { }
+
+                                                    if (saved !== null) {
+                                                        input.value = saved;
+                                                    }
+
+                                                    input.addEventListener(
+                                                        'input',
+                                                        function () {
+
+                                                            try {
+                                                                localStorage.setItem(
+                                                                    key,
+                                                                    input.value
+                                                                );
+                                                            } catch (e) { }
+
+                                                        }
+                                                    );
+
+                                                })(inputs[i], i);
+                                            }
+
+                                        })(all[n]);
+                                    }
+
+                                })();
+                            </script><img src="/rg_verso.png" alt="">
+                        </div>
+                        <style>
+                            .duo-img-90 {
+                                width: 100%;
+                                height: 100%;
+                                aspect-ratio: 2/1;
+                                display: flex;
+                                overflow: hidden;
+                                box-sizing: border-box
+                            }
+
+                            .duo-img-90-cell {
+                                flex: 0 0 50%;
+                                min-width: 0;
+                                position: relative;
+                                overflow: hidden;
+                                container-type: size
+                            }
+
+                            .duo-img-90-cell img {
+                                position: absolute;
+                                top: 50%;
+                                left: 50%;
+                                width: 350px;
+                                max-width: none;
+                                object-fit: contain;
+                                display: block;
+                                transform: translate(-50%, -50%) rotate(-90deg);
+                                animation: duo-img-90-giro 1s ease-in-out
+                            }
+
+                            @keyframes duo-img-90-giro {
+                                from {
+                                    transform: translate(-50%, -50%) rotate(0deg)
+                                }
+
+                                to {
+                                    transform: translate(-50%, -50%) rotate(-90deg)
+                                }
+                            }
+                        </style>
+                    </div>
+                </section>
+
+                <section class="placeholder" id="placeholder">
+                    <span class="flag flag--lg" id="placeholder-flag"></span>
+                    <h2 class="placeholder__title">Nada por aqui ainda</h2>
+                    <p class="placeholder__text">
+                        O conteúdo de <strong id="placeholder-name"></strong> será construído nesta área.
+                    </p>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            'use strict';
+
+            /* ----------------------------------------------------------------------
+               Catálogo — adicionar uma linha aqui já faz o item aparecer na sidebar.
+               `doc` é exibido em caixa alta via CSS (.doc-name__type); `flag` aponta
+               para um <symbol id="flag-xx"> do sprite.
+               ------------------------------------------------------------------- */
+            const DOCS = [
+                { id: 'rg-brasil', doc: 'RG', country: 'Brasil', flag: 'br' },
+                { id: 'passaporte-brasil', doc: 'Passaporte', country: 'Brasil', flag: 'br' },
+                { id: 'cnh-brasil', doc: 'CNH', country: 'Brasil', flag: 'br' },
+                { id: 'cpf-brasil', doc: 'CPF', country: 'Brasil', flag: 'br' },
+            ];
+
+            const SVG_NS = 'http://www.w3.org/2000/svg';
+            const mobile = window.matchMedia('(max-width: 1023.98px)');
+            const $ = (sel, root = document) => root.querySelector(sel);
+
+            const els = {
+                sidebar: $('#sidebar'),
+                main: $('#main'),
+                content: $('#content'),
+                toggle: $('#nav-toggle'),
+                close: $('.sidebar__close'),
+                search: $('#nav-search'),
+                list: $('#nav-list'),
+                count: $('#nav-count'),
+                empty: $('#nav-empty'),
+                emptyQuery: $('#nav-empty-query'),
+                status: $('#nav-status'),
+                pageFlag: $('#page-flag'),
+                pageType: $('#page-type'),
+                pageCountry: $('#page-country'),
+                placeholder: $('#placeholder'),
+                phFlag: $('#placeholder-flag'),
+                phName: $('#placeholder-name'),
+            };
+
+            /* ---------- Helpers ---------- */
+
+            // Minúsculas e sem acentos: "Rússia" casa com "russia"
+            const fold = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+            function flagSvg(code) {
+                const svg = document.createElementNS(SVG_NS, 'svg');
+                const use = document.createElementNS(SVG_NS, 'use');
+                svg.setAttribute('class', 'flag__img');
+                svg.setAttribute('aria-hidden', 'true');
+                use.setAttribute('href', `#flag-${code}`);
+                svg.append(use);
+                return svg;
+            }
+
+            // Escreve `text` em `el`, envolvendo em <mark> os trechos que casam com os termos
+            function highlight(el, text, tokens) {
+                if (!tokens.length) { el.textContent = text; return; }
+
+                const chars = Array.from(text);
+                const folded = chars.map((c) => fold(c).charAt(0) || c).join('');
+                const hit = new Array(chars.length).fill(false);
+
+                for (const token of tokens) {
+                    for (let i = folded.indexOf(token); i !== -1; i = folded.indexOf(token, i + 1)) {
+                        hit.fill(true, i, i + token.length);
+                    }
+                }
+
+                const frag = document.createDocumentFragment();
+                for (let i = 0, j; i < chars.length; i = j) {
+                    for (j = i; j < chars.length && hit[j] === hit[i]; j++);
+                    const chunk = chars.slice(i, j).join('');
+                    if (hit[i]) {
+                        const mark = document.createElement('mark');
+                        mark.textContent = chunk;
+                        frag.append(mark);
+                    } else {
+                        frag.append(chunk);
+                    }
+                }
+                el.replaceChildren(frag);
+            }
+
+            /* ---------- Lista ---------- */
+
+            const items = DOCS.map((doc) => {
+                const li = document.createElement('li');
+                const link = document.createElement('a');
+                const flag = document.createElement('span');
+                const label = document.createElement('span');
+                const typeEl = document.createElement('span');
+                const countryEl = document.createElement('span');
+
+                link.className = 'nav-item';
+                link.href = `#${doc.id}`;
+                flag.className = 'flag';
+                flag.append(flagSvg(doc.flag));
+                label.className = 'nav-item__label';
+                typeEl.className = 'doc-name__type';
+                countryEl.className = 'doc-name__country';
+                typeEl.textContent = doc.doc;
+                countryEl.textContent = doc.country;
+
+                label.append(typeEl, ' ', countryEl);
+                link.append(flag, label);
+                li.append(link);
+                els.list.append(li);
+
+                return { ...doc, li, link, typeEl, countryEl, haystack: fold(`${doc.doc} ${doc.country}`) };
+            });
+
+            const visibleLinks = () => items.filter((it) => !it.li.hidden).map((it) => it.link);
+
+            /* ---------- Busca ---------- */
+
+            function applyFilter() {
+                const query = els.search.value.trim();
+                const tokens = fold(query).split(/\s+/).filter(Boolean);
+                let shown = 0;
+
+                for (const it of items) {
+                    const match = tokens.every((t) => it.haystack.includes(t));
+                    it.li.hidden = !match;
+                    if (!match) continue;
+                    shown++;
+                    highlight(it.typeEl, it.doc, tokens);
+                    highlight(it.countryEl, it.country, tokens);
+                }
+
+                els.count.textContent = tokens.length ? `${shown}/${items.length}` : String(items.length);
+                els.empty.hidden = shown > 0;
+                els.list.hidden = shown === 0;
+                els.emptyQuery.textContent = query;
+                els.status.textContent =
+                    shown === 0 ? 'Nenhum documento encontrado'
+                        : shown === 1 ? '1 documento'
+                            : `${shown} documentos`;
+            }
+
+            function clearSearch() {
+                els.search.value = '';
+                applyFilter();
+                els.search.focus();
+            }
+
+            /* ---------- Seleção (via hash, sobrevive a reload) ---------- */
+
+            function syncActive() {
+                const id = decodeURIComponent(location.hash.slice(1));
+                const active = items.find((it) => it.id === id) || items[0];
+
+                for (const it of items) {
+                    if (it === active) it.link.setAttribute('aria-current', 'page');
+                    else it.link.removeAttribute('aria-current');
+                }
+
+                els.pageFlag.replaceChildren(flagSvg(active.flag));
+                els.phFlag.replaceChildren(flagSvg(active.flag));
+                els.pageType.textContent = active.doc;
+                els.pageCountry.textContent = active.country;
+                els.phName.textContent = `${active.doc.toUpperCase()} ${active.country}`;
+
+                // Mostra só a seção do documento ativo; sem seção própria, fica o placeholder
+                let hasPage = false;
+                for (const page of els.content.querySelectorAll('[data-page]')) {
+                    page.hidden = page.dataset.page !== active.id;
+                    if (!page.hidden) hasPage = true;
+                }
+                els.placeholder.hidden = hasPage;
+            }
+
+            /* ---------- Drawer (mobile) ---------- */
+
+            const isNavOpen = () => document.body.classList.contains('is-nav-open');
+
+            // Fora da tela, a sidebar sai da ordem de tabulação; aberta, quem sai é o conteúdo
+            function syncInert() {
+                els.sidebar.toggleAttribute('inert', mobile.matches && !isNavOpen());
+                els.main.toggleAttribute('inert', mobile.matches && isNavOpen());
+            }
+
+            function setNav(open, { restoreFocus = true } = {}) {
+                if (open === isNavOpen()) return;
+                document.body.classList.toggle('is-nav-open', open);
+                els.toggle.setAttribute('aria-expanded', String(open));
+                syncInert();
+                if (open) els.close.focus({ preventScroll: true });
+                else if (restoreFocus) els.toggle.focus({ preventScroll: true });
+            }
+
+            /* ---------- Eventos ---------- */
+
+            els.search.addEventListener('input', applyFilter);
+
+            els.search.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    visibleLinks()[0]?.focus();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    visibleLinks()[0]?.click();
+                } else if (e.key === 'Escape' && els.search.value) {
+                    e.preventDefault();
+                    e.stopPropagation(); // primeiro Esc limpa; o próximo fecha o drawer
+                    clearSearch();
+                }
+            });
+
+            els.list.addEventListener('keydown', (e) => {
+                if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+                const links = visibleLinks();
+                const i = links.indexOf(document.activeElement);
+                if (i === -1) return;
+                e.preventDefault();
+                const next = links[i + (e.key === 'ArrowDown' ? 1 : -1)];
+                if (next) next.focus();
+                else if (e.key === 'ArrowUp') els.search.focus();
+            });
+
+            els.list.addEventListener('click', (e) => {
+                if (!e.target.closest('.nav-item')) return;
+                if (mobile.matches) setNav(false, { restoreFocus: false });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('[data-search-clear]')) clearSearch();
+                else if (e.target.closest('[data-nav-close]')) setNav(false);
+            });
+
+            els.toggle.addEventListener('click', () => setNav(!isNavOpen()));
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isNavOpen()) {
+                    setNav(false);
+                    return;
+                }
+
+                const typing = e.target.closest?.('input, textarea, select, [contenteditable=""], [contenteditable="true"]');
+                const slash = e.key === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey;
+                const cmdK = e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey;
+                if (!slash && !cmdK) return;
+
+                e.preventDefault();
+                if (mobile.matches) setNav(true);
+                els.search.focus();
+                els.search.select();
+            });
+
+            window.addEventListener('hashchange', syncActive);
+
+            mobile.addEventListener('change', () => {
+                if (!mobile.matches) setNav(false, { restoreFocus: false });
+                syncInert();
+            });
+
+            /* ---------- Início ---------- */
+            applyFilter();
+            syncActive();
+            syncInert();
+        })();
+    </script>
+</body>
+
+</html>
